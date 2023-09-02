@@ -7,6 +7,7 @@
 
 char* game_path = "SSBM.iso";
 char* dolphin_emu_file = "./dolphin-emu";
+char* dolphin_replay_file = "./slippi-replay";
 
 Evas_Object* mainer;
 Evas_Object* win;

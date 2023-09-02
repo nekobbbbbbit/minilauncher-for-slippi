@@ -8,3 +8,4 @@ traversal_server
 User
 Sys
 *.iso
+*.json

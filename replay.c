@@ -117,7 +117,7 @@ parse_replay(struct replay* rpy)
 	rpy->p2 = p2name;
 	rpy->p2code = p2code;
 	
-	printf("Reading %s\n", filename);
+	//printf("Reading %s\n", filename);
 abort:
 	fclose(SLP);
 	return 0;
@@ -139,7 +139,7 @@ recurse_replay_files()
     			rpy->filename = strdup(ep->d_name);
     			// End
     			parse_replay(rpy);
-    			puts(ep->d_name);
+    			//puts(ep->d_name);
 			}
 		}
           
@@ -178,12 +178,46 @@ replays_strings(void* data, Evas_Object* obj, const char* part)
 		return NULL;
 }
 
+// Need to fork in a thread or EFL spergs out
+void
+_launch_replay_job_cb(void *data, Ecore_Thread *thread)
+{
+	extern char* dolphin_replay_file;
+	extern char* game_path;
+	char const* argv[64] = {dolphin_replay_file, "-e", game_path, "-i", "play.json", "-b", NULL};
+	if (fork() == 0)
+	{
+		execvp(argv[0], argv);
+		exit(0);
+	}
+}
+
+static void
+_launch_replay_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+	elm_object_disabled_set(data, EINA_TRUE);
+	ecore_thread_run(_launch_replay_job_cb,
+	                 NULL,
+	                 NULL, data);
+}
+
 static void
 _item_select_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	long idx = data;
-	printf("sel item data [%p] on genlist obj [%p], item pointer [%p]\n",
-	       data, obj, event_info);
+	char* jason;
+	asprintf(&jason, "{\"replay\":\"%s%s\"}\n", replays_dir, replays[idx].filename);
+	
+	// Write to file
+	FILE* outfile = fopen("play.json", "w");
+	fwrite(jason, 1, strlen(jason), outfile);
+	fclose(outfile);
+	
+	ecore_thread_run(_launch_replay_job_cb,
+	                 NULL,
+	                 NULL, data);
+	
+	free(jason);
 }
 
 void

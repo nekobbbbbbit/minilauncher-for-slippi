@@ -1,0 +1,10 @@
+*.o
+replays
+dolphin-emu
+minilauncher4slippi
+*.core
+portable.txt
+traversal_server
+User
+Sys
+*.iso

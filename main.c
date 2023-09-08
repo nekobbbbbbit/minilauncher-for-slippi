@@ -4,17 +4,48 @@
 #include <Efl_Ui.h>
 #include <Elementary.h>
 #include "replay.h"
+#include "home.h"
 
+int opt_mallocd = -1;
 char* game_path = "SSBM.iso";
-char* dolphin_emu_file = "./dolphin-emu";
-char* dolphin_replay_file = "./slippi-replay";
+char* dolphin_emu_file = "slippi-netplay-dolphin";
+char* dolphin_replay_file = "slippi-playback-dolphin";
 
 Evas_Object* mainer;
 Evas_Object* win;
 Evas_Object* _tab_curr;
-Evas_Object* tab_home;
+//extern Evas_Object* tab_home;
 //extern Evas_Object* tab_replays;
 Evas_Object* tab_config;
+
+int
+parse_config(char* file)
+{
+	FILE* CFG = fopen(file, "r");
+	if (!CFG)
+	{	
+		perror("fopen");
+		return 1;
+	}
+	
+	int buf_len = 255;
+	char buf[buf_len];
+	char* rdpnt;
+	for (int i = 0; fgets(buf, buf_len, CFG); ++i) {
+		if ((rdpnt = strchr(buf, '\n')))
+			*rdpnt = '\0';
+		switch (i)
+		{
+			case 0: game_path = strdup(buf); break;
+			case 1: dolphin_emu_file = strdup(buf); break;
+			case 2: dolphin_replay_file = strdup(buf); break;
+		}
+    	++opt_mallocd;
+    }
+abort:	
+	fclose(CFG);
+	return 0;
+}
 
 void
 _tab_switch_cb(void *_data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
@@ -85,9 +116,8 @@ _replays_tab_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_
 void
 tabs_init()
 {
-	tab_home = elm_button_add(win);
-	elm_object_text_set(tab_home, "Test button");
-   	evas_object_size_hint_align_set(tab_home, EVAS_HINT_FILL, EVAS_HINT_FILL);
+	tab_home_setup(mainer);
+	
 	
 
 	// BEGIN tab_replays
@@ -98,6 +128,8 @@ tabs_init()
 EAPI_MAIN int
 elm_main(int argc, char **argv)
 {
+	parse_config("minilauncher4slippi.cfg");
+	
 	/* = win
 	 * |
 	 * \== bx
@@ -192,7 +224,12 @@ elm_main(int argc, char **argv)
     	                       300 * elm_config_scale_get());
 	evas_object_show(win);
 
+	printf("[Current config] %s, %s, %s\n", game_path, dolphin_emu_file, dolphin_replay_file);
 	elm_run();
+	
+	if (opt_mallocd >= 0) free(game_path);
+	if (opt_mallocd >= 1) free(dolphin_emu_file);
+	if (opt_mallocd >= 2) free(dolphin_replay_file);
 	
 	return 0;
 }

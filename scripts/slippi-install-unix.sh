@@ -36,7 +36,8 @@ fi
 if [ "$_PATH" == "git" ]
 then
 	echo "== Cloning Slippi Ishiiruka..."
-	git clone --recurse-submodules -j$THREADS https://github.com/project-slippi/Ishiiruka.git work > /dev/null || exit
+	# Point to my own fork for now until I provide .patch files
+	git clone --recurse-submodules -j$THREADS "https://github.com/nekobbbbbbit/Ishiiruka.git" work > /dev/null || exit
 	cd work
 else
 	cd "$_PATH"

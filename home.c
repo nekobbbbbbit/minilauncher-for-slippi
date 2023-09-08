@@ -168,13 +168,9 @@ tab_home_setup(Evas_Object* parent)
 	
 	elm_object_content_set(tab_home_scr, tab_home_content);
 	
+	evas_object_show(tab_home_content);
+	evas_object_show(tab_home_scr);
+	evas_object_show(tab_home);
 	
-	//elm_object_content_set(tab_home, tab_home_box);
-	//evas_object_show(bt);
-	//evas_object_show(tab_home_box);
-	//evas_object_show(tab_home);
-	
-	
-   	
    	_tab_home_make_da_damn_request();
 }

@@ -9,3 +9,5 @@ User
 Sys
 *.iso
 *.json
+scripts/build.log
+scripts/Ishiiruka

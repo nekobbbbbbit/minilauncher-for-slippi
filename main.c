@@ -123,6 +123,10 @@ tabs_init()
 	// BEGIN tab_replays
 	tab_replays_setup(mainer);
 	// END tab_replays
+	
+	_tab_curr = tab_home;
+	evas_object_show(_tab_curr);
+	elm_obj_box_pack_end(mainer, _tab_curr);
 }
 
 EAPI_MAIN int

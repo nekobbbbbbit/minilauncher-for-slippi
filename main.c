@@ -204,6 +204,7 @@ elm_main(int argc, char **argv)
 	if (argc > 1 && argv[1] && tolower(argv[1][0]) == 'b')
 	{
 		bigmode = 1;
+		elm_win_fullscreen_set(win, EINA_TRUE);
 		elm_object_scale_set(win, 1.8);
 	}
 	// END main

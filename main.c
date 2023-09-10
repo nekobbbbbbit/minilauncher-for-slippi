@@ -19,7 +19,9 @@ Evas_Object* win;
 Evas_Object* _tab_curr;
 extern Evas_Object* tab_home;
 extern Evas_Object* tab_replays;
+Evas_Object* tab_scroller;
 Evas_Object* _tabs[] = { NULL, NULL };
+Evas_Object* _scrollers[] = { NULL, NULL };
 int _tabs_len = 2;
 int _tabs_i = 0; // home
 Evas_Object* tab_config;
@@ -85,6 +87,7 @@ update_tab(Evas_Object* newtab)
 	if (newtab)
 	{
 		_tab_curr = newtab;
+		tab_scroller = _tab_curr;
 		evas_object_size_hint_weight_set(_tab_curr, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 		evas_object_show(mainer);
 		evas_object_show(_tab_curr);
@@ -108,7 +111,8 @@ void
 _launch_slippi_job_end_cb(void *data, Ecore_Thread *thread)
 {
 	//Re-enable button so we can start again
-	elm_object_disabled_set(data, EINA_FALSE);
+	if (data)
+		elm_object_disabled_set(data, EINA_FALSE);
 }
 
 // Need to fork in a thread or EFL spergs out

@@ -5,6 +5,9 @@
 #include <Elementary.h>
 #include "replay.h"
 #include "home.h"
+#ifndef NO_SDL_INPUT
+#	include "input.h"
+#endif
 
 int opt_mallocd = -1;
 char* game_path = "SSBM.iso";
@@ -14,9 +17,36 @@ char* dolphin_replay_file = "slippi-playback-dolphin";
 Evas_Object* mainer;
 Evas_Object* win;
 Evas_Object* _tab_curr;
-//extern Evas_Object* tab_home;
-//extern Evas_Object* tab_replays;
+extern Evas_Object* tab_home;
+extern Evas_Object* tab_replays;
+Evas_Object* _tabs[] = { NULL, NULL };
+int _tabs_len = 2;
+int _tabs_i = 0; // home
 Evas_Object* tab_config;
+
+void update_tab(Evas_Object*);
+
+void
+prev_tab()
+{
+	--_tabs_i;
+	if (_tabs_i == -1)
+	{
+		_tabs_i = _tabs_len-1;
+	}
+	update_tab(_tabs[_tabs_i]);
+}
+
+void
+next_tab()
+{
+	++_tabs_i;
+	if (_tabs_i == _tabs_len)
+	{
+		_tabs_i = 0;
+	}
+	update_tab(_tabs[_tabs_i]);
+}
 
 int
 parse_config(char* file)
@@ -48,28 +78,31 @@ abort:
 }
 
 void
+update_tab(Evas_Object* newtab)
+{
+	elm_obj_box_unpack_all(mainer);
+	evas_object_hide(_tab_curr);
+	if (newtab)
+	{
+		_tab_curr = newtab;
+		evas_object_size_hint_weight_set(_tab_curr, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+		evas_object_show(mainer);
+		evas_object_show(_tab_curr);
+		elm_obj_box_pack_end(mainer, _tab_curr);
+	}
+}
+
+void
 _tab_switch_cb(void *_data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
 	Evas_Object** data = _data;
-	elm_obj_box_unpack_all(mainer);
-	evas_object_hide(_tab_curr);
-	_tab_curr = *data;
-	
-	evas_object_size_hint_weight_set(_tab_curr, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-	
-	//elm_obj_box_recalculate(mainer);
-	evas_object_show(mainer);
-	evas_object_show(_tab_curr);
-	elm_obj_box_pack_end(mainer, _tab_curr);
-	
-	//evas_object_move(_tab_curr, 100, 15);
-	//evas_object_resize(_tab_curr, 100, 100);
-	
-	//Evas_Object* test = elm_button_add(mainer);
-	//elm_object_text_set(test, "Test button");	
-	//evas_object_show(test);	
-	//elm_obj_box_pack_end(mainer, test);
+	update_tab(*data);
 }
+
+void _prev_tab_cb(void *_data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{ prev_tab(); }
+void _next_tab_cb(void *_data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{ next_tab(); }
 
 void
 _launch_slippi_job_end_cb(void *data, Ecore_Thread *thread)
@@ -94,10 +127,11 @@ _launch_slippi_job_cb(void *data, Ecore_Thread *thread)
 	}
 }
 
-static void
+void
 _launch_slippi_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-	elm_object_disabled_set(data, EINA_TRUE);
+	if (data)
+		elm_object_disabled_set(data, EINA_TRUE);
 	ecore_thread_run(_launch_slippi_job_cb,
 	                 _launch_slippi_job_end_cb,
 	                 _launch_slippi_job_end_cb, data);
@@ -116,14 +150,14 @@ _replays_tab_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_
 void
 tabs_init()
 {
-	tab_home_setup(mainer);
+	_tabs[0] = tab_home_setup(mainer);
 	
 	
 
 	// BEGIN tab_replays
-	tab_replays_setup(mainer);
-	// END tab_replays
+	_tabs[1] = tab_replays_setup(mainer);
 	
+	// Show home tab at start
 	_tab_curr = tab_home;
 	evas_object_show(_tab_curr);
 	elm_obj_box_pack_end(mainer, _tab_curr);
@@ -163,12 +197,24 @@ elm_main(int argc, char **argv)
 	
 	elm_win_resize_object_add(win, main);
 	evas_object_show(main);
+	elm_win_focus_highlight_enabled_set(win, EINA_TRUE);
+	elm_win_focus_highlight_animate_set(win, EINA_TRUE);
+	// Check for a 'b' character, aka big picture mode, big mode, whatever..
+	int bigmode = 0;
+	if (argc > 1 && argv[1] && tolower(argv[1][0]) == 'b')
+	{
+		bigmode = 1;
+		elm_object_scale_set(win, 1.8);
+	}
 	// END main
 
 	// BEGIN toolbar
 	tb_box = elm_box_add(win);
-	tb = elm_toolbar_add(tb_box);
 	elm_box_horizontal_set(tb_box, EINA_TRUE);
+	
+	if (!bigmode)
+	{
+	tb = elm_toolbar_add(tb_box);
 	
 	elm_object_style_set(tb, "item_horizontal");
 	elm_toolbar_homogeneous_set(tb, EINA_TRUE);
@@ -191,26 +237,61 @@ elm_main(int argc, char **argv)
 	elm_toolbar_item_menu_set(tb_it, EINA_TRUE);
 	elm_toolbar_item_priority_set(tb_it, -9999);
 	elm_toolbar_menu_parent_set(tb, win);
+	}
 	
+	// Play button
 	that = elm_button_add(tb_box);
 	elm_object_text_set(that, "Play");
 	evas_object_smart_callback_add(that, "clicked", _launch_slippi_cb, that);
 	Evas_Object* icon = elm_icon_add(win);
 	elm_icon_standard_set(icon, "input-gaming");
+	elm_icon_resizable_set(icon, EINA_TRUE, EINA_FALSE);
 	elm_object_part_content_set(that, "icon", icon);
 	evas_object_show(that);
-	 elm_box_pack_end(tb_box, that);
+	elm_box_pack_end(tb_box, that);
+	// End play button
 	
-	 elm_box_pack_end(tb_box, tb);
-	
-	that = elm_clock_add(tb_box);
+	if (bigmode)
+	{
+	// Prev button
+	that = elm_button_add(tb_box);
+	elm_object_text_set(that, "");
+	evas_object_smart_callback_add(that, "clicked", _prev_tab_cb, NULL);
+	/*ICON*/icon = elm_icon_add(win);
+	elm_icon_standard_set(icon, "go-previous");
+	elm_icon_resizable_set(icon, EINA_TRUE, EINA_FALSE);
+	elm_object_part_content_set(that, "icon", icon);
+	/*END ICON*/
 	evas_object_show(that);
-	 elm_box_pack_end(tb_box, that);
+	elm_box_pack_start(tb_box, that);
 	
-	 elm_box_pack_end(main, tb_box);
+	// Next button
+	that = elm_button_add(tb_box);
+	elm_object_text_set(that, "");
+	evas_object_smart_callback_add(that, "clicked", _next_tab_cb, that);
+	/*ICON*/icon = elm_icon_add(win);
+	elm_icon_standard_set(icon, "go-next");
+	elm_icon_resizable_set(icon, EINA_TRUE, EINA_FALSE);
+	elm_object_part_content_set(that, "icon", icon);
+	/*END ICON*/
+	evas_object_show(that);
+	elm_box_pack_end(tb_box, that);
+	}
+	
+	if (!bigmode)
+	{
+		elm_box_pack_end(tb_box, tb);
+	
+		that = elm_clock_add(tb_box);
+		evas_object_size_hint_fill_set(that, EVAS_HINT_FILL, EVAS_HINT_FILL);
+		evas_object_show(that);
+		elm_box_pack_end(tb_box, that);
+		evas_object_show(tb);
+	}
+	
+	elm_box_pack_end(main, tb_box);
 	
 	evas_object_show(tb_box);
-	evas_object_show(tb);
 	// END toolbar
 
 	mainer = elm_box_add(win);
@@ -225,10 +306,16 @@ elm_main(int argc, char **argv)
 	tabs_init();
 
 	evas_object_resize(win, 520 * elm_config_scale_get(),
-    	                       300 * elm_config_scale_get());
+    	                    300 * elm_config_scale_get());
 	evas_object_show(win);
 
 	printf("[Current config] %s, %s, %s\n", game_path, dolphin_emu_file, dolphin_replay_file);
+	
+	// Setup input
+#ifndef NO_SDL_INPUT
+	input_sdl_init_thread();
+#endif
+	
 	elm_run();
 	
 	if (opt_mallocd >= 0) free(game_path);

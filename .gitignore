@@ -8,6 +8,8 @@ traversal_server
 User
 Sys
 *.iso
+*.ciso
 *.json
 scripts/build.log
 scripts/Ishiiruka
+scripts/work

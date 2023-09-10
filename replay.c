@@ -220,7 +220,7 @@ _item_select_cb(void *data, Evas_Object *obj, void *event_info)
 	free(jason);
 }
 
-void
+Evas_Object*
 tab_replays_setup(Evas_Object* parent)
 {
 	tab_replays = elm_genlist_add(parent);
@@ -248,5 +248,5 @@ tab_replays_setup(Evas_Object* parent)
 	}
 	
    	evas_object_size_hint_align_set(tab_replays, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   	
+   	return tab_replays;
 }

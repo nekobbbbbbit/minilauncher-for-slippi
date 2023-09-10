@@ -2,7 +2,6 @@
 #include <curl/curl.h>
 #include <cjson/cJSON.h>
 #include <stdint.h>
-#include <md4c-html.h>
 #include "replay.h"
 
 Evas_Object* tab_home = NULL;
@@ -144,8 +143,7 @@ _tab_home_make_da_damn_request()
 	
 }
 
-
-void
+Evas_Object*
 tab_home_setup(Evas_Object* parent)
 {
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -173,4 +171,5 @@ tab_home_setup(Evas_Object* parent)
 	evas_object_show(tab_home);
 	
    	_tab_home_make_da_damn_request();
+   	return tab_home;
 }

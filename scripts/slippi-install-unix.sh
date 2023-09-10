@@ -15,6 +15,26 @@ then
 	SU="doas"
 fi
 
+if command -v pkg > /dev/null
+then
+	echo "You're on FreeBSD! This works fine, but be mindful of any errors!"
+fi
+
+
+nf() { if ! command -v "$1" > /dev/null; then echo "$1 not found. Set \$IJUSTKNOWOKAY to skip these checks."; exit 2; fi }
+npkgcnf() { if ! pkg-config --libs "$1" > /dev/null; then echo "library $1 not found. Set \$IJUSTKNOWOKAY to skip these checks."; exit 3; fi }
+# Just some bin tests
+if [ ! "$IJUSTKNOWOKAY" ]
+then
+	nf "rustc"
+	nf "git"
+	nf "pkg-config"
+	nf "cmake"
+	npkgcnf "libcurl"
+	npkgcnf "libusb-1.0"
+	npkgcnf "libpng"
+fi
+
 if [ "$_IS_INSTALL" = "install" ]
 then
 	CMAKE_FLAGS="$CMAKE_FLAGS -DINSTALLMODE=true"
@@ -37,13 +57,33 @@ if [ "$_PATH" == "git" ]
 then
 	echo "== Cloning Slippi Ishiiruka..."
 	# Point to my own fork for now until I provide .patch files
-	git clone --recurse-submodules -j$THREADS "https://github.com/nekobbbbbbit/Ishiiruka.git" work > /dev/null || exit
-	cd work
-else
-	cd "$_PATH"
+	if [ ! -d "work" ]
+	then
+		git clone --recurse-submodules -j$THREADS "https://github.com/nekobbbbbbit/Ishiiruka.git" work > /dev/null || exit
+	else
+		printf "Already git cloned. Checking updates.\n[GIT] "
+		git -C work pull
+		echo "git pull returned $?"
+		echo "You should probably check Minilauncher for updates too =^)"
+	fi
+	_PATH=work
 fi
+cd "$_PATH"
 
 echo "NOTE: Build logs are stored in build.log"
+
+check_error()
+{
+	if [ $? -eq 0 ]
+	then
+		echo ">>> :-)"
+	else
+		echo -e "--------- Command failed. build.log output ---------\n[ *snip* ]"
+		tail -n 45 "$PWD_/build.log"
+		echo ">>> :-("
+		exit 1
+	fi
+}
 
 build_slippi()
 {
@@ -57,10 +97,14 @@ build_slippi()
 	DATE=$(date "+%Y-%m-%d %H:%M:%S")
 	echo ">>>>>> BEGIN BUILD LOG ON $DATE" >> "$PWD_/build.log"
 	echo ">>> cmake $CMAKE_F .." >> "$PWD_/build.log"
-	cmake $CMAKE_F .. >> "$PWD_/build.log" 2>&1 || exit 1
+	echo ">>> cmake $CMAKE_F .."
+	cmake $CMAKE_F .. >> "$PWD_/build.log" 2>&1
+	check_error
 	echo "== Building $NEW_BIN_NAME"
 	echo ">>> make -j$THREADS" >> "$PWD_/build.log"
-	make -j$THREADS >> "$PWD_/build.log" 2>&1 || exit 1
+	echo ">>> make -j$THREADS"
+	make -j$THREADS >> "$PWD_/build.log" 2>&1
+	check_error
 	echo ">>>>>> END BUILD LOG ON $DATE" >> "$PWD_/build.log"
 	cd ..
 	# Copy the Sys folder in

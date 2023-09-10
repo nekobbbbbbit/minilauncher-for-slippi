@@ -8,7 +8,7 @@
 
 extern Evas_Object* tab_replays;
 
-void
+Evas_Object*
 tab_replays_setup(Evas_Object* parent);
 
 #endif /* REPLAY_H */

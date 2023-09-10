@@ -1,7 +1,7 @@
 CC=cc
-CFLAGS=`pkg-config --cflags efl ecore elementary` `curl-config --cflags`
-LDFLAGS=`pkg-config --libs efl ecore elementary` `curl-config --libs` -lcjson
-OBJS=main.o replay.o home.o
+CFLAGS=-g `pkg-config --cflags efl ecore elementary` `sdl2-config --cflags` `curl-config --cflags`
+LDFLAGS=`pkg-config --libs efl ecore elementary` `sdl2-config --libs` `curl-config --libs` -lcjson
+OBJS=main.o replay.o home.o input.o
 
 minilauncher4slippi: $(OBJS)
 	$(CC) -o minilauncher4slippi $(OBJS) $(LDFLAGS)

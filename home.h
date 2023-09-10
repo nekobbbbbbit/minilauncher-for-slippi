@@ -8,7 +8,7 @@
 
 extern Evas_Object* tab_home;
 
-void
+Evas_Object*
 tab_home_setup(Evas_Object* parent);
 
 #endif /* HOME_H */

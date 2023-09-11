@@ -13,7 +13,7 @@ struct replay
 	char* p2;
 	char* p2code;
 	int game_state;
-} replays[25565] = {0};
+}* replays = NULL;
 size_t replays_len = 0;
 
 unsigned
@@ -135,6 +135,7 @@ recurse_replay_files()
     	{
     		if (ep->d_name && ep->d_name[0] != '.')
     		{
+    			replays = realloc(replays, sizeof(struct replay) * (replays_len+2));
     			struct replay* rpy = replays + replays_len++;
     			rpy->filename = strdup(ep->d_name);
     			// End

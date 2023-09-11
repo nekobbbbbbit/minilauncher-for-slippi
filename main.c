@@ -3,6 +3,7 @@
 #include <Ecore.h>
 #include <Efl_Ui.h>
 #include <Elementary.h>
+#include <libusb.h>
 #include "replay.h"
 #include "home.h"
 #ifndef NO_SDL_INPUT
@@ -317,9 +318,7 @@ elm_main(int argc, char **argv)
 	printf("[Current config] %s, %s, %s\n", game_path, dolphin_emu_file, dolphin_replay_file);
 	
 	// Setup input
-#ifndef NO_SDL_INPUT
-	input_sdl_init_thread();
-#endif
+	input_init_threads();
 	
 	elm_run();
 	

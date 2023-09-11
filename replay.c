@@ -13,7 +13,7 @@ struct replay
 	char* p2;
 	char* p2code;
 	int game_state;
-} replays[256] = {0};
+} replays[25565] = {0};
 size_t replays_len = 0;
 
 unsigned

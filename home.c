@@ -83,6 +83,13 @@ releases_result(struct memory_chunk chunk)
 		cJSON* body = cJSON_GetObjectItemCaseSensitive(c, "body_html");
 		Eina_Strbuf* body_fmt = eina_strbuf_manage_new(body->valuestring);
 		eina_strbuf_replace_all(body_fmt, "\n", "<br>");
+		eina_strbuf_replace_all(body_fmt, "<h1>", "<title>");
+		eina_strbuf_replace_all(body_fmt, "</h1>", "</>");
+		eina_strbuf_replace_all(body_fmt, "<h2>", "<subtitle>");
+		eina_strbuf_replace_all(body_fmt, "</h2>", "</>");
+		eina_strbuf_replace_all(body_fmt, "<h3>", "<heading>");
+		eina_strbuf_replace_all(body_fmt, "</h3>", "</>");
+		eina_strbuf_replace_all(body_fmt, "<li>", "<li> - ");
 		eina_strbuf_trim(body_fmt);
 		
 		

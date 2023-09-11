@@ -1,14 +1,17 @@
 # Minilauncher4slippi
 
-Launcher for Slippi that runs on Linux, *BSD, and more. It uses the EFL
+Launcher for Slippi that runs on Windows, Mac(?), Linux, *BSD, and more. It uses the EFL
 toolkit.
 
-It supports Playing the game, replays, and basic settings.
+It supports Playing the game (thank GOD...), replays, and basic settings.
 
 ---
 
 It was created to work around some Electron woes (specifically on *BSD), alongside just provide a
 smaller, minimalistic launcher.
+
+EFL also provides a wider array of customization for themes, such as
+colors.. making it a very pretty launcher 
 
 # This is unofficial.
 

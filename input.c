@@ -36,7 +36,7 @@ _scroll_loop_cb(void* data)
 void
 input_init_threads()
 {
-	//ecore_timer_add(.005, _scroll_loop_cb, NULL);
+	ecore_timer_add(.005, _scroll_loop_cb, NULL);
 	ecore_thread_run(_input_sdl_setup_thread, NULL, NULL, NULL);
 	ecore_thread_run(_input_gcadapter_setup_thread, NULL, NULL, NULL);
 }

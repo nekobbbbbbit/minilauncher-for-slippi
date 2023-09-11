@@ -242,32 +242,18 @@ input_gcadapter_setup()
 				ret = libusb_interrupt_transfer(gcadapter, gc_endpoint_out, &payload,
 				                          sizeof(payload), &tmp, 32);
 				                          
-				                          sleep(1);
+				                          sleep(2);
 				              
-				float z = 120; 
 				while (1)
 				{           
-				ret = libusb_interrupt_transfer(gcadapter, gc_endpoint_out, &payload,
-				                          sizeof(payload), &tmp, 32);
-				z += 0.001;
-				unsigned char rumble[] = {0x11,z,z,z,z};
+				unsigned char rumble[] = {0x11,1,1,1,1};
 			                           
 				ret = libusb_interrupt_transfer(gcadapter, gc_endpoint_out, rumble, sizeof(rumble), &tmp, 32);
-				printf("%d byte\n", tmp);
-				if (ret)
-				{
-					printf("Error\n");
-				}
-				//sleep(1);
-				unsigned char rumbles[] = {0x11,0,0,0,0};
+				                          sleep(2);
+				unsigned char rumble2[] = {0x11,0,0,0,0};
 			                           
-				ret = libusb_interrupt_transfer(gcadapter, gc_endpoint_out, rumbles, sizeof(rumbles), &tmp, 32);
-				printf("%d byte\n", tmp);
-				if (ret)
-				{
-					printf("Error\n");
-				}
-				//sleep(1);
+				ret = libusb_interrupt_transfer(gcadapter, gc_endpoint_out, rumble2, sizeof(rumble2), &tmp, 32);
+				ret = libusb_interrupt_transfer(gcadapter, gc_endpoint_in, rumble2, sizeof(rumble2), &tmp, 32);
 				}
 				
 				// END...

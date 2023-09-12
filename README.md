@@ -13,22 +13,6 @@ smaller, minimalistic launcher.
 EFL also provides a wider array of customization for themes, such as
 colors.. making it a very pretty launcher 
 
-# This is unofficial.
-
-```diff
-! This is unofficial
-! This is unofficial
-! This is unofficial
-! This is unofficial
-! This is unofficial
-! This is unofficial
-! This is unofficial
-! This is unofficial
-! This is unofficial
-! PLEASE, do not contact Slippi developers for support. They won't help
-! you.
-```
-
 # License
 
 The license is stored conveniently in a PNG file for your viewing pleasure.

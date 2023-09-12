@@ -58,6 +58,7 @@ ubjson_search(unsigned char* buf, long length, char const* key, long* offset)
 {
 	size_t key_len = strlen(key);
 	char* start = sstrstr(buf, key, length);
+	if (!start) return NULL;
 	start += key_len;
 	// Just 8 bits for now...
 	uint8_t value_len = start[0];
@@ -167,14 +168,19 @@ replays_strings(void* data, Evas_Object* obj, const char* part)
 {
 	long idx = data;
 	// Check this is text for the part we're expecting
-	if (strcmp(part, "elm.text") == 0)
+	if (strcmp(part, "elm.text") == 0 &&
+	    /* DQ after join */
+	    (replays[idx].p1 != NULL && replays[idx].p2 != NULL))
 	{
 		char* c;
-		asprintf(&c, "%s | %s [%s] Vs. %s [%s]", gameend2str(replays[idx].game_state),
+		asprintf(&c, "[[%s]] %s [%s] Vs. %s [%s]", gameend2str(replays[idx].game_state),
 		         replays[idx].p1, replays[idx].p1code,
 		         replays[idx].p2, replays[idx].p2code);
 		return c;
 	}
+	else if (replays[idx].p1 == NULL || replays[idx].p2 == NULL)
+		printf("[Replay Warning] %s is a incomplete replay. Good idea to delete it.\n",
+		       replays[idx].filename);
 	else
 		return NULL;
 }

@@ -27,9 +27,9 @@ Eina_Bool
 _scroll_loop_cb(void* data)
 {
 	int x, y, w, h;
-	elm_scroller_region_get(mainer, &x, &y, &w, &h);
+	//elm_scroller_region_get(mainer, &x, &y, &w, &h);
 	y += y_mod;
-	elm_scroller_region_show(mainer, x, y, w, h);
+	//elm_scroller_region_show(mainer, x, y, w, h);
 	return EINA_TRUE;
 }
 

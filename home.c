@@ -66,6 +66,8 @@ releases_result(struct memory_chunk chunk)
 			elm_frame_collapse_set(release_fr, EINA_TRUE);
 		elm_box_pack_end(tab_home_content, release_fr);
 		cJSON* title = cJSON_GetObjectItemCaseSensitive(c, "name");
+		if (!title) // (((Rate limit))) and/or whatever bullshit crops up.
+			return 1;
 		elm_object_text_set(release_fr, title->valuestring);
 		evas_object_show(release_fr);
 		

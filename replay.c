@@ -1,5 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <time.h>
+#include <sys/types.h>
+#include <assert.h>
 #include "replay.h"
 
 Evas_Object* tab_replays = NULL;
@@ -86,7 +90,9 @@ parse_replay(struct replay* rpy)
 		perror("fopen");
 		return 1;
 	}
-	
+	// We used stat at some point, but a filename comparison is easier to write
+	//assert(stat(filename, &(rpy->attr)) == 0);
+
 	long filesize = fsize(SLP);
 	
 	// Skip begin header and raw data
@@ -124,11 +130,18 @@ abort:
 	return 0;
 }
 
+int
+order_filename_greatest(void const* _rpy1, void const* _rpy2)
+{
+	struct replay* rpy1 = _rpy1, * rpy2 = _rpy2;
+	return -strcmp(rpy1->filename, rpy2->filename);
+}
+
 static int
 recurse_replay_files()
 {
 	DIR *dp;
-	struct dirent *ep;     
+	struct dirent *ep;
 	dp = opendir(replays_dir);
 	if (dp != NULL)
 	{
@@ -136,15 +149,19 @@ recurse_replay_files()
     	{
     		if (ep->d_name && ep->d_name[0] != '.')
     		{
-    			replays = realloc(replays, sizeof(struct replay) * (replays_len+2));
+    			replays = realloc(replays, sizeof(struct replay) * (replays_len + 2));
     			struct replay* rpy = replays + replays_len++;
     			rpy->filename = strdup(ep->d_name);
-    			// End
+
+    			// We used to parse replays as is, but now we sort by date.
     			parse_replay(rpy);
-    			//puts(ep->d_name);
 			}
 		}
-          
+		
+		// Lol. Lmao, even.
+		qsort(replays, replays_len, sizeof(struct replay),
+		      order_filename_greatest);
+		      
 		closedir(dp);
 		return 0;
 	}
@@ -173,7 +190,7 @@ replays_strings(void* data, Evas_Object* obj, const char* part)
 	    (replays[idx].p1 != NULL && replays[idx].p2 != NULL))
 	{
 		char* c;
-		asprintf(&c, "[[%s]] %s [%s] Vs. %s [%s]", gameend2str(replays[idx].game_state),
+		asprintf(&c, "%s (%s) Vs. %s (%s)",
 		         replays[idx].p1, replays[idx].p1code,
 		         replays[idx].p2, replays[idx].p2code);
 		return c;
@@ -191,7 +208,7 @@ _launch_replay_job_cb(void *data, Ecore_Thread *thread)
 {
 	extern char* dolphin_replay_file;
 	extern char* game_path;
-	char const* argv[64] = {dolphin_replay_file, "-e", game_path, "-i", "play.json", "-b", NULL};
+	char const* argv[] = {dolphin_replay_file, "-e", game_path, "-i", "play.json", "-b", NULL};
 	if (fork() == 0)
 	{
 		execvp(argv[0], argv);

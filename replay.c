@@ -8,6 +8,8 @@
 
 Evas_Object* tab_replays = NULL;
 char* replays_dir = "replays/";
+Ecore_Exe* dolphin_replay_exe;
+extern char* dolphin_replay_file, *game_path;
 
 struct replay
 {
@@ -19,6 +21,14 @@ struct replay
 	int game_state;
 }* replays = NULL;
 size_t replays_len = 0;
+
+void
+_launch_slippi_cb(void *data,
+                  Evas_Object *obj EINA_UNUSED,
+                  void *event_info EINA_UNUSED);
+                  
+Eina_Bool
+_launch_restore_btn(void* data);
 
 unsigned
 dec_uint_be(unsigned char* arr, size_t len)
@@ -202,27 +212,18 @@ replays_strings(void* data, Evas_Object* obj, const char* part)
 		return NULL;
 }
 
-// Need to fork in a thread or EFL spergs out
-void
-_launch_replay_job_cb(void *data, Ecore_Thread *thread)
-{
-	extern char* dolphin_replay_file;
-	extern char* game_path;
-	char const* argv[] = {dolphin_replay_file, "-e", game_path, "-i", "play.json", "-b", NULL};
-	if (fork() == 0)
-	{
-		execvp(argv[0], argv);
-		exit(0);
-	}
-}
 
 static void
 _launch_replay_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-	elm_object_disabled_set(data, EINA_TRUE);
-	ecore_thread_run(_launch_replay_job_cb,
-	                 NULL,
-	                 NULL, data);
+	//if (data)
+	//	elm_object_disabled_set(data, EINA_TRUE);
+	
+	//ecore_timer_add(3, _launch_restore_btn, data);
+	
+	Eina_Strbuf* exe = eina_strbuf_new();
+	eina_strbuf_append_printf(exe, "%s -e %s -i play.json -b", dolphin_replay_file, game_path);
+	dolphin_replay_exe = ecore_exe_run(eina_strbuf_release(exe), data);
 }
 
 static void
@@ -237,9 +238,7 @@ _item_select_cb(void *data, Evas_Object *obj, void *event_info)
 	fwrite(jason, 1, strlen(jason), outfile);
 	fclose(outfile);
 	
-	ecore_thread_run(_launch_replay_job_cb,
-	                 NULL,
-	                 NULL, data);
+	_launch_replay_cb(obj, obj, NULL);
 	
 	free(jason);
 }

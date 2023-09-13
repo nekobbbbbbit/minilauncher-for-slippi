@@ -15,6 +15,7 @@ char* game_path = "SSBM.iso";
 char* dolphin_emu_file = "slippi-netplay-dolphin";
 char* dolphin_replay_file = "slippi-playback-dolphin";
 
+Ecore_Exe* dolphin_netplay_exe;
 Evas_Object* mainer;
 Evas_Object* win;
 Evas_Object* _tab_curr;
@@ -106,28 +107,12 @@ void _prev_tab_cb(void *_data, Evas_Object *obj EINA_UNUSED, void *event_info EI
 void _next_tab_cb(void *_data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 { next_tab(); }
 
-void
-_launch_slippi_job_end_cb(void *data, Ecore_Thread *thread)
+Eina_Bool
+_launch_restore_btn(void* data)
 {
-	//Re-enable button so we can start again
 	if (data)
 		elm_object_disabled_set(data, EINA_FALSE);
-}
-
-// Need to fork in a thread or EFL spergs out
-void
-_launch_slippi_job_cb(void *data, Ecore_Thread *thread)
-{
-	char const* argv[64] = {dolphin_emu_file, "-e", game_path, "-b", NULL};
-	if (fork() == 0)
-	{
-		execvp(argv[0], argv);
-		exit(0);
-	}
-	else {
-		// Delay thread to prevent from launching again (button is disabled)
-		usleep(2000000);
-	}
+	return ECORE_CALLBACK_CANCEL;
 }
 
 void
@@ -135,18 +120,25 @@ _launch_slippi_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EIN
 {
 	if (data)
 		elm_object_disabled_set(data, EINA_TRUE);
-	ecore_thread_run(_launch_slippi_job_cb,
-	                 _launch_slippi_job_end_cb,
-	                 _launch_slippi_job_end_cb, data);
+	
+	ecore_timer_add(3, _launch_restore_btn, data);
+	
+	Eina_Strbuf* exe = eina_strbuf_new();
+	eina_strbuf_append_printf(exe, "%s -e %s -b", dolphin_emu_file, game_path);
+	dolphin_netplay_exe = ecore_exe_run(eina_strbuf_release(exe), data);
+	//ecore_exe_callback_pre_free_set(exe, _launch_restore_btn);
+	//ecore_thread_run(_launch_slippi_job_cb,
+	//                 _launch_slippi_job_end_cb,
+	//                 _launch_slippi_job_end_cb, data);
 }
 
 static void
 _replays_tab_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
 	elm_object_item_disabled_set(*(Elm_Object_Item**)data, EINA_TRUE);
-	ecore_thread_run(_launch_slippi_job_cb,
-	                 _launch_slippi_job_end_cb,
-	                 _launch_slippi_job_end_cb, data);
+	//ecore_thread_run(_launch_slippi_job_cb,
+	//                 _launch_slippi_job_end_cb,
+	//                 _launch_slippi_job_end_cb, data);
 }
 
 

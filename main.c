@@ -14,6 +14,9 @@ int opt_mallocd = -1;
 char* game_path = "SSBM.iso";
 char* dolphin_emu_file = "slippi-netplay-dolphin";
 char* dolphin_replay_file = "slippi-playback-dolphin";
+#ifndef DATA_DIR
+#define DATA_DIR "data/"
+#endif
 
 Ecore_Exe* dolphin_netplay_exe;
 Evas_Object* mainer;

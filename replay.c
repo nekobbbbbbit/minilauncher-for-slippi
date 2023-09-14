@@ -250,7 +250,7 @@ tab_replays_setup(Evas_Object* parent)
 	elm_genlist_homogeneous_set(tab_replays, EINA_TRUE);
 	evas_object_resize(tab_replays, 40, 40);
 	Elm_Genlist_Item_Class *_itc = elm_genlist_item_class_new();
-	_itc->item_style = "default";
+	_itc->item_style = "double_label";
 	_itc->func.text_get = replays_strings;
 	_itc->func.content_get = NULL;
 	_itc->func.state_get = NULL;
